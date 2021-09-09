@@ -67,19 +67,16 @@ class PlaylistListViewController: UIViewController {
         super.viewDidLoad()
         
         PlaylistManager.shared.contentWillChange
-        .receive(on: RunLoop.main)
         .sink { [weak self] in
             self?.controllerWillChangeContent()
         }.store(in: &observers)
         
         PlaylistManager.shared.contentDidChange
-        .receive(on: RunLoop.main)
         .sink { [weak self] in
             self?.controllerDidChangeContent()
         }.store(in: &observers)
         
         PlaylistManager.shared.objectDidChange
-        .receive(on: RunLoop.main)
         .sink { [weak self] in
             self?.controllerDidChange($0.object,
                                       at: $0.indexPath,
