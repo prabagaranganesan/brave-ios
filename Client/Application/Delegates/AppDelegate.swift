@@ -33,7 +33,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UIViewControllerRestorati
     var rootViewController: UIViewController!
     weak var profile: Profile?
     var tabManager: TabManager!
-    var braveCore: BraveCoreMain?
+    var braveCore = BraveCoreMain()
 
     weak var application: UIApplication?
     var launchOptions: [AnyHashable: Any]?
@@ -84,8 +84,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UIViewControllerRestorati
             return true
         }
         
-        self.braveCore = BraveCoreMain()
-        self.braveCore?.setUserAgent(UserAgent.mobile)
+        braveCore.setUserAgent(UserAgent.mobile)
         
         SceneObserver.setupApplication(window: self.window!)
 
@@ -177,16 +176,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UIViewControllerRestorati
         // the simulator via Xcode will count as a "crash" and lead to restore popups in the subsequent launch
         let crashedLastSession = !Preferences.AppState.backgroundedCleanly.value && AppConstants.buildChannel != .debug
         Preferences.AppState.backgroundedCleanly.value = false
-                    
-        guard let historyAPI = braveCore?.historyAPI, let bookmarkAPI = braveCore?.bookmarksAPI else {
-            return false
-        }
 
+        // TODO: Remove brave-core APIs force-unwrapping after IOS-4166 merged
+        // History API and Bookmarks API should not be nullable on brave-core side
         browserViewController = BrowserViewController(
             profile: self.profile!,
             tabManager: self.tabManager,
-            historyAPI: historyAPI,
-            bookmarkAPI: bookmarkAPI,
+            historyAPI: braveCore.historyAPI!,
+            bookmarkAPI: braveCore.bookmarksAPI!,
             crashedLastSession: crashedLastSession)
         browserViewController.edgesForExtendedLayout = []
 
@@ -206,7 +203,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UIViewControllerRestorati
         SystemUtils.onFirstRun()
         
         // Schedule Brave Core Priority Tasks
-        self.braveCore?.scheduleLowPriorityStartupTasks()
+        braveCore.scheduleLowPriorityStartupTasks()
         browserViewController.removeScheduledAdGrantReminders()
 
         log.info("startApplication end")
@@ -226,7 +223,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UIViewControllerRestorati
         
         // Clean up BraveCore
         BraveSyncAPI.removeAllObservers()
-        self.braveCore = nil
     }
 
     /**
