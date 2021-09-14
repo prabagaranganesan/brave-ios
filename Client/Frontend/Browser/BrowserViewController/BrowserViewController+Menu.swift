@@ -6,6 +6,7 @@
 import Foundation
 import SwiftUI
 import BraveUI
+import BraveShared
 import Shared
 import Data
 
